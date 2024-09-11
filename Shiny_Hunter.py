@@ -128,6 +128,12 @@ def GUI_control(Encounter_Type, FPS, Controller, Image_Queue, shutdown_event, st
             # Update the database
             elif Controller.current_event == "CHECK_SHINY" and type(pokemon_image) != type(None):
                 pokemon_name = pokemon_image.recognize_pokemon(Encounter_Type)
+
+                # Check if the expected pokemon is not the one found. Save the video of the error
+                if CONST.TESTING and Encounter_Type == 'STATIC' \
+                    and CONST.TEST_STATIC_EXPECTED_POKEMON is not None and CONST.TEST_STATIC_EXPECTED_POKEMON != pokemon_name:
+                        Video_Capture.save_video(f'Error - {time()}')
+                
                 if CONST.SAVE_IMAGES: 
                     pokemon_image.save_image(pokemon_name)
                     # Check if the computer is running out of space
