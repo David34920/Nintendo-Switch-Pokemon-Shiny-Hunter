@@ -103,6 +103,7 @@ def GUI_control(Encounter_Type, FPS, Controller, Image_Queue, shutdown_event, st
             # Refresh the event
             if Encounter_Type == 'WILD': Controller.current_event = search_wild_pokemon(image, Controller.current_event)
             elif Encounter_Type == 'STATIC': Controller.current_event = static_encounter(image, Controller.current_event)
+            elif Encounter_Type == 'SHAIMIN': Controller.current_event = search_shaimin_pokemon(image, Controller.current_event)
             elif Encounter_Type == 'STARTER': Controller.current_event = starter_encounter(image, Controller.current_event)
 
             # Check if the program got stuck in some event
@@ -206,6 +207,7 @@ def controller_control(controller, shutdown_event):
             'ESCAPE_FAILED_2', 'ENTER_LAKE_2', 'ENTER_LAKE_4']: press_single_button(controller, 'A')
         elif aux_current_event == 'ENTER_STATIC_COMBAT_1': enter_static_combat_macro(controller)
         elif aux_current_event == 'MOVE_PLAYER': move_player_wild_macro(controller)
+        elif aux_current_event == 'MOVE_PLAYER_FOR_SHAIMIN': move_player_shaimin_macro(controller)
         elif aux_current_event == 'ENTER_LAKE_1': enter_lake_macro(controller)
         elif aux_current_event == 'STARTER_SELECTION_2': select_starter_macro(controller)
         elif aux_current_event == 'STARTER_SELECTION_3': accept_selection_box_macro(controller)
@@ -246,6 +248,7 @@ if __name__ == "__main__":
         print(COLOR_str.MENU_OPTION.replace('{index}', '1').replace('{option}', 'Start wild shiny hunter'))
         print(COLOR_str.MENU_OPTION.replace('{index}', '2').replace('{option}', 'Start static shiny hunter'))
         print(COLOR_str.MENU_OPTION.replace('{index}', '3').replace('{option}', 'Start starter shiny hunter'))
+        print(COLOR_str.MENU_OPTION.replace('{index}', '4').replace('{option}', 'Start Shaimin shiny hunter'))
 
         option = input('\n' + COLOR_str.OPTION_SELECTION.replace('{module}', 'Shiny Hunter'))
 
@@ -253,6 +256,7 @@ if __name__ == "__main__":
             '1': shiny_hunter,
             '2': shiny_hunter,
             '3': shiny_hunter,
+            '4': shiny_hunter,
         }
 
         # Set XDG_RUNTIME_DIR and ALSOFT_LOGLEVEL environment variable (avoid unnecessary warnings)
@@ -272,6 +276,8 @@ if __name__ == "__main__":
         if option == '1': action = 'wild'
         elif option == '2': action = 'static'
         elif option == '3': action = 'starter'
+        elif option == '4': action = 'Shaimin'
+        
         print('\n' + COLOR_str.SELECTED_OPTION
             .replace('{module}', 'Shiny Hunter')
             .replace('{option}', f"{option}")
@@ -344,6 +350,7 @@ if __name__ == "__main__":
         if option == '1': encounter_type = 'WILD'
         elif option == '2': encounter_type = 'STATIC'
         elif option == '3': encounter_type = 'STARTER'
+        elif option == '4': encounter_type = 'SHAIMIN'
 
         threads = []
         threads.append({

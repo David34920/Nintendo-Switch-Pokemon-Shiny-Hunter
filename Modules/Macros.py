@@ -101,30 +101,50 @@ def restart_game_macro(controller):
 ###########################################################################################################################
 
 # The player moves Up/Down or Right/Left
-def move_player_wild_macro(controller):
+def move_player_wild_macro(controller, direction = CONST.WILD_WALKING_DIRECTION, walking_duration = CONST.WILD_WALKING_SECONDS):
     global walking_direction
 
-    if CONST.WILD_WALKING_DIRECTION == 'NS':
+    if direction == 'NS':
         if not walking_direction:
             controller.current_button_pressed = 'UP'
             controller.nxbt_manager.press_buttons(
-                controller.controller_index, [Buttons.DPAD_UP, Buttons.B], down=CONST.WILD_WALKING_SECONDS)
+                controller.controller_index, [Buttons.DPAD_UP, Buttons.B], down=walking_duration)
         else: 
             controller.current_button_pressed = 'DOWN'
             controller.nxbt_manager.press_buttons(
-                controller.controller_index, [Buttons.DPAD_DOWN, Buttons.B], down=CONST.WILD_WALKING_SECONDS)
+                controller.controller_index, [Buttons.DPAD_DOWN, Buttons.B], down=walking_duration)
 
-    elif CONST.WILD_WALKING_DIRECTION == 'EW':
+    elif direction == 'EW':
         if not walking_direction:
             controller.current_button_pressed = 'LEFT'
             controller.nxbt_manager.press_buttons(
-                controller.controller_index, [Buttons.DPAD_LEFT, Buttons.B], down=CONST.WILD_WALKING_SECONDS)
+                controller.controller_index, [Buttons.DPAD_LEFT, Buttons.B], down=walking_duration)
         else: 
             controller.current_button_pressed = 'RIGHT'
             controller.nxbt_manager.press_buttons(
-                controller.controller_index, [Buttons.DPAD_RIGHT, Buttons.B], down=CONST.WILD_WALKING_SECONDS)
-    
+                controller.controller_index, [Buttons.DPAD_RIGHT, Buttons.B], down=walking_duration)
+    else:
+        raise ValueError("Invalid direction. Use 'NS' for Up/Down or 'EW' for Right/Left")
+
     walking_direction = not walking_direction
+
+
+def move_player_shaimin_macro(controller):
+    global walking_direction
+
+    # We want to go down
+    walking_direction = True
+
+    # Move down
+    move_player_wild_macro(controller, 'NS', 5)
+
+    # Go back to the top
+    move_player_wild_macro(controller, 'NS', 5)
+
+    # Start fight
+    controller.current_button_pressed = 'A'; sleep(0.2)
+    controller.nxbt_manager.press_buttons(controller.controller_index, [Buttons.A])
+    controller.current_button_pressed = ''; sleep(0.1)
 
 ###########################################################################################################################
 
