@@ -196,26 +196,30 @@ def controller_control(controller, shutdown_event):
     try: controller.connect_controller()
     except: return
 
-    while not shutdown_event.is_set(): 
-        # Prevent the main execution from being blocked
-        with controller.event_lock: aux_current_event = controller.current_event
+    try:
+        while not shutdown_event.is_set(): 
+            # Prevent the main execution from being blocked
+            with controller.event_lock: aux_current_event = controller.current_event
 
-        if aux_current_event == 'WAIT_HOME_SCREEN': fast_start_macro(controller)
-        elif aux_current_event == 'RESTART_GAME_1': restart_game_macro(controller)
-        elif aux_current_event in ['RESTART_GAME_2', 'RESTART_GAME_3', 'ENTER_STATIC_COMBAT_2', 
-            'ESCAPE_FAILED_2', 'ENTER_LAKE_2', 'ENTER_LAKE_4']: press_single_button(controller, 'A')
-        elif aux_current_event == 'ENTER_STATIC_COMBAT_1': enter_static_combat_macro(controller)
-        elif aux_current_event == 'MOVE_PLAYER': move_player_wild_macro(controller)
-        elif aux_current_event == 'ENTER_LAKE_1': enter_lake_macro(controller)
-        elif aux_current_event == 'STARTER_SELECTION_2': select_starter_macro(controller)
-        elif aux_current_event == 'STARTER_SELECTION_3': accept_selection_box_macro(controller)
-        elif aux_current_event == 'ESCAPE_COMBAT_2': escape_combat_macro(controller)
-        elif aux_current_event == 'STOP_1': stop_macro(controller)
+            if aux_current_event == 'WAIT_HOME_SCREEN': fast_start_macro(controller)
+            elif aux_current_event == 'RESTART_GAME_1': restart_game_macro(controller)
+            elif aux_current_event in ['RESTART_GAME_2', 'RESTART_GAME_3', 'ENTER_STATIC_COMBAT_2', 
+                'ESCAPE_FAILED_2', 'ENTER_LAKE_2', 'ENTER_LAKE_4']: press_single_button(controller, 'A')
+            elif aux_current_event == 'ENTER_STATIC_COMBAT_1': enter_static_combat_macro(controller)
+            elif aux_current_event == 'MOVE_PLAYER': move_player_wild_macro(controller)
+            elif aux_current_event == 'ENTER_LAKE_1': enter_lake_macro(controller)
+            elif aux_current_event == 'STARTER_SELECTION_2': select_starter_macro(controller)
+            elif aux_current_event == 'STARTER_SELECTION_3': accept_selection_box_macro(controller)
+            elif aux_current_event == 'ESCAPE_COMBAT_2': escape_combat_macro(controller)
+            elif aux_current_event == 'STOP_1': stop_macro(controller)
 
-        # Don't care about race conditions here
-        controller.previous_event = aux_current_event
-        controller.current_button_pressed = ''
-        sleep(0.1)
+            # Don't care about race conditions here
+            controller.previous_event = aux_current_event
+            controller.current_button_pressed = ''
+            sleep(0.1)
+    except Exception as e:
+        print('Error in controller_control', e)
+        return
 
     try: controller.disconnect_controller()
     except: return

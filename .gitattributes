@@ -1,0 +1,4 @@
+# Ensure that text files that any contributor introduces to the repository have their line endings normalized
+
+# text attribute to "auto" for all files.
+* text=auto
