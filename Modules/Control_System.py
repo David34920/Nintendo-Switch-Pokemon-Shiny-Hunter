@@ -21,6 +21,8 @@ import Constants as CONST
 state_timer = 0
 
 def search_shaimin_pokemon(image, state):
+    global state_timer
+
     if not state: return 'WAIT_PAIRING_SCREEN'
 
     # Nintendo Switch pairing controller menu
@@ -33,10 +35,11 @@ def search_shaimin_pokemon(image, state):
     elif state == 'RESTART_GAME_4':
         # Look for the top-left load screen pixel
         if image.check_pixel_color(CONST.LOAD_SCREEN_BLACK_COLOR):
+            state_timer = time()
             return 'MOVE_PLAYER_FOR_SHAIMIN'
     
     # Player is moving to the shaimin location
-    elif state == 'MOVE_PLAYER_FOR_SHAIMIN':
+    elif state == 'MOVE_PLAYER_FOR_SHAIMIN' and time() - state_timer >= (CONST.SHAIMIN_WALKING_SECONDS*2):
         # Look for the text box
         if _is_text_box_visible(image, x='overworld_x'): return 'ENTER_STATIC_COMBAT_2'
         
@@ -270,7 +273,8 @@ def starter_encounter(image, state):
 ###########################################################################################################################
 
 def _check_common_static_states(image, state):
-
+    global state_timer
+    
     # Game loaded, player in the overworld
     if state == 'ENTER_STATIC_COMBAT_2':
         # Look if the text box has disappeared

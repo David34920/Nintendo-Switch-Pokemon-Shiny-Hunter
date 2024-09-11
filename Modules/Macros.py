@@ -136,10 +136,10 @@ def move_player_shaimin_macro(controller):
     walking_direction = True
 
     # Move down
-    move_player_wild_macro(controller, 'NS', 5)
+    move_player_wild_macro(controller, 'NS', CONST.SHAIMIN_WALKING_SECONDS)
 
     # Go back to the top
-    move_player_wild_macro(controller, 'NS', 5)
+    move_player_wild_macro(controller, 'NS', CONST.SHAIMIN_WALKING_SECONDS)
 
     # Start fight
     controller.current_button_pressed = 'A'; sleep(0.2)
