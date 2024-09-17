@@ -7,3 +7,6 @@ __pycache__
 
 Test.py
 Changelog.txt
+
+# OS generated files #
+**/.DS_Store

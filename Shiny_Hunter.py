@@ -35,6 +35,9 @@ from Game_Capture import Game_Capture
 from Image_Processing import Image_Processing
 from Switch_Controller import Switch_Controller
 
+from cProfile import Profile
+from pstats import SortKey, Stats
+
 ###########################################################################################################################
 #################################################     INITIALIZATIONS     #################################################
 ###########################################################################################################################
@@ -268,6 +271,17 @@ if __name__ == "__main__":
     #######################################################################################################################
     #######################################################################################################################
 
+
+    def _profile(lambda_to_profile):
+        with Profile() as profile:
+            lambda_to_profile()
+            (
+                Stats(profile)
+                .strip_dirs()
+                .sort_stats(SortKey.CALLS)
+                .print_stats()
+            )
+
     def shiny_hunter(option):
         if option == '1': action = 'wild'
         elif option == '2': action = 'static'
@@ -346,23 +360,30 @@ if __name__ == "__main__":
         elif option == '3': encounter_type = 'STARTER'
 
         threads = []
-        threads.append({
-            'function': 'GUI_control',
-            'thread': Thread(target=lambda: 
-                GUI_control(encounter_type, FPS, Controller, Image_Queue, shutdown_event, stop_event), daemon=True)
-        })
-        threads.append({
-            'function': 'get_memory_usage',
-            'thread': Thread(target=lambda: FPS.get_memory_usage(shutdown_event), daemon=True)
-        })
-        threads.append({
-            'function': 'controller_control',
-            'thread': Thread(target=lambda: controller_control(Controller, shutdown_event), daemon=True)
-        })
-        threads.append({
-            'function': 'check_threads',
-            'thread': Thread(target=lambda: check_threads(threads, shutdown_event), daemon=True)
-        })
+
+        # Create profiled threads
+        def profile_thread(name, function):
+            return {
+            'function': name,
+            'thread': Thread(target=lambda: _profile(function), daemon=True)
+            }
+
+        threads.append(profile_thread(
+            'GUI_control',
+            lambda: GUI_control(encounter_type, FPS, Controller, Image_Queue, shutdown_event, stop_event)
+        ))
+        threads.append(profile_thread(
+            'get_memory_usage',
+            lambda: FPS.get_memory_usage(shutdown_event)
+        ))
+        threads.append(profile_thread(
+            'controller_control',
+            lambda: controller_control(Controller, shutdown_event)
+        ))
+        threads.append(profile_thread(
+            'check_threads',
+            lambda: check_threads(threads, shutdown_event)
+        ))
         for thread in threads: thread['thread'].start()
 
         GUI_App = App()
