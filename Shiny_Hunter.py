@@ -278,8 +278,8 @@ if __name__ == "__main__":
             (
                 Stats(profile)
                 .strip_dirs()
-                .sort_stats(SortKey.CALLS)
-                .print_stats()
+                .sort_stats(SortKey.CUMULATIVE)
+                .print_stats(10)
             )
 
     def shiny_hunter(option):
