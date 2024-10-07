@@ -129,15 +129,13 @@ def static_encounter(image, state):
     elif state == 'ENTER_STATIC_COMBAT_2':
         # Look if the text box has disappeared
         if not is_overworld_visible(image):
-            state_timer = time()
             return 'ENTER_STATIC_COMBAT_3'
 
     # Game loaded, player in the overworld
-    # Some static encounters make a white screen flash before entering the combat
-    elif state == 'ENTER_STATIC_COMBAT_3' and time() - state_timer >= CONST.STATIC_ENCOUNTERS_DELAY:
-        # Look for the load combat white screen
-        if is_load_fight_white_screen(image):
-            return 'ENTER_COMBAT_1'
+    elif state == 'ENTER_STATIC_COMBAT_3':
+        # Look for the text box
+        if is_text_box_visible(image):
+            return 'ENTER_COMBAT_3'
 
     # Combat loaded (Wild Pokémon stars)
     elif state == 'CHECK_SHINY':
@@ -342,23 +340,34 @@ def is_black_screen_visible(image):
 def is_text_box_visible(image):
     """
     Checks if the text box is visible in the given image.
+    The text box is considered visible if the bottom left and
+    right corners are white and the top corners are not white.
     Args:
         image: The image in which to check for the text box.
-        x: The x coordinate of the text box.
     Returns:
         bool: True if the text box is visible, False otherwise.
     """
-    text_box_left_visible = image.check_multiple_pixel_colors(
+    is_bottom_left_white = image.check_multiple_pixel_colors(
         [CONST.TEXT_BOX_LINE['x'], CONST.TEXT_BOX_LINE['y1']],
         [CONST.TEXT_BOX_LINE['x'], CONST.TEXT_BOX_LINE['y2']],
         CONST.TEXT_BOX_LINE['color'])
 
-    text_box_right_visible = image.check_multiple_pixel_colors(
+    is_bottom_right_white = image.check_multiple_pixel_colors(
         [CONST.MAIN_FRAME_SIZE[0] - CONST.TEXT_BOX_LINE['x'], CONST.TEXT_BOX_LINE['y1']],
         [CONST.MAIN_FRAME_SIZE[0] - CONST.TEXT_BOX_LINE['x'], CONST.TEXT_BOX_LINE['y2']],
         CONST.TEXT_BOX_LINE['color'])
 
-    return text_box_left_visible and text_box_right_visible
+    is_top_left_white = image.check_multiple_pixel_colors(
+        [CONST.TEXT_BOX_LINE['x'], CONST.MAIN_FRAME_SIZE[1] - CONST.TEXT_BOX_LINE['y2']],
+        [CONST.TEXT_BOX_LINE['x'], CONST.MAIN_FRAME_SIZE[1] - CONST.TEXT_BOX_LINE['y1']],
+        CONST.TEXT_BOX_LINE['color'])
+
+    is_top_right_white = image.check_multiple_pixel_colors(
+        [CONST.MAIN_FRAME_SIZE[0] - CONST.TEXT_BOX_LINE['x'], CONST.MAIN_FRAME_SIZE[1] - CONST.TEXT_BOX_LINE['y2']],
+        [CONST.MAIN_FRAME_SIZE[0] - CONST.TEXT_BOX_LINE['x'], CONST.MAIN_FRAME_SIZE[1] - CONST.TEXT_BOX_LINE['y1']],
+        CONST.TEXT_BOX_LINE['color'])
+
+    return is_bottom_left_white and is_bottom_right_white and not is_top_left_white and not is_top_right_white
 
 ###########################################################################################################################
 
