@@ -18,6 +18,7 @@ import PyQt5.QtGui as pyqt_g
 import sys; sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import Colored_Strings as COLOR_str
 import Constants as CONST
+from threading import Thread
 
 ###########################################################################################################################
 #################################################     INITIALIZATIONS     #################################################
@@ -188,10 +189,12 @@ class Image_Processing():
     #######################################################################################################################
 
     # Save the image
-    def save_image(self, pokemon_name = ''):
+    def save_image(self, pokemon_name=''):
         file_name = f'{pokemon_name}_{str(int(time()))}' if pokemon_name else str(int(time()))
         self.saved_image_path = f'./{CONST.IMAGES_FOLDER_PATH}{file_name}.png'
-        cv2.imwrite(self.saved_image_path, self.original_image)
+
+        Thread(target=lambda path=self.saved_image_path, image=self.original_image: cv2.imwrite(path, image),
+               daemon=False).start()
 
     #######################################################################################################################
 

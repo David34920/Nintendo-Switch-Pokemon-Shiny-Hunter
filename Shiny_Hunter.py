@@ -26,7 +26,7 @@ from queue import Queue
 from time import sleep, time
 from threading import Thread, Event, Timer
 
-from Macros import *
+from Modules.Macros import *
 from Database import *
 import Constants as CONST
 from Control_System import *
@@ -37,6 +37,7 @@ from GUI import GUI, App, play_sound
 from Game_Capture import Game_Capture
 from Image_Processing import Image_Processing
 from Switch_Controller import Switch_Controller
+from Modules import search_wild_pokemon, starter_encounter, static_encounter, sword_shield_giants, add_or_update_encounter
 
 ###########################################################################################################################
 #################################################     INITIALIZATIONS     #################################################
@@ -100,7 +101,7 @@ def GUI_control(Encounter_Type, FPS, Controller, Image_Queue, shutdown_event, st
             switch_controller_image.draw_button(Controller.current_button_pressed)
             Controller.previous_button_pressed = Controller.current_button_pressed
 
-        with Controller.event_lock: 
+        with Controller.event_lock:
             # Check if the pokemon is shiny
             if Controller.current_event == "CHECK_SHINY":
                 # Only reset the first time it enters to the state
@@ -125,14 +126,19 @@ def GUI_control(Encounter_Type, FPS, Controller, Image_Queue, shutdown_event, st
 
             # Check if the program got stuck in some event
             if (Controller.current_event not in 
-                ["MOVE_PLAYER", "WAIT_PAIRING_SCREEN", "WAIT_HOME_SCREEN", "SHINY_FOUND", "ENTER_LAKE_4"] and \
-                Controller.current_event == Controller.previous_event and \
+                ["MOVE_PLAYER", "WAIT_PAIRING_SCREEN", "WAIT_HOME_SCREEN", "SHINY_FOUND", "ENTER_LAKE_4"] and
+                Controller.current_event == Controller.previous_event and
                 time() - stuck_timer > CONST.STUCK_TIMER_SECONDS) or time() - stuck_timer > 120:
+                    print(f'Stuck in the same state, try to restart game. Current event: {Controller.current_event}')
                     stuck_timer = time()
                     # If stuck in "RESTART_GAME_1", it would be stuck forever
                     Controller.previous_event = None
                     Controller.current_event = "RESTART_GAME_1"
-                    if CONST.SAVE_ERROR_VIDEOS: Video_Capture.save_video(f'Error - {time()}')
+
+                    system_space = FPS.get_system_available_space()
+                    if CONST.SAVE_ERROR_VIDEOS and system_space['available_no_format'] >= CONST.CRITICAL_AVAILABLE_SPACE:
+                        Video_Capture.save_video(f'Error - {time()}')
+
             elif Controller.current_event != Controller.previous_event: stuck_timer = time()
 
             # Start recording a new video
@@ -147,18 +153,18 @@ def GUI_control(Encounter_Type, FPS, Controller, Image_Queue, shutdown_event, st
             # Update the database
             elif Controller.current_event == "CHECK_SHINY" and type(pokemon_image) != type(None):
                 pokemon_name = pokemon_image.recognize_pokemon()
-                if CONST.SAVE_IMAGES: 
-                    pokemon_image.save_image(pokemon_name)
-                    last_saved_image_path = pokemon_image.saved_image_path
+                if CONST.SAVE_IMAGES:
                     # Check if the computer is running out of space
                     system_space = FPS.get_system_available_space()
-                    if system_space['available_no_format'] < CONST.CRITICAL_AVAILABLE_SPACE:
+                    if system_space['available_no_format'] >= CONST.CRITICAL_AVAILABLE_SPACE:
+                        pokemon_image.save_image(pokemon_name)
+                        last_saved_image_path = pokemon_image.saved_image_path
+                    else:
                         print(COLOR_str.RUNNING_OUT_OF_SPACE
                             .replace('{module}', 'Shiny Hunter')
                             .replace('{available_space}', system_space['available'])
                         )
-                        # I'm editing the value of a constant. I know, I deserve to die!
-                        CONST.SAVE_IMAGES = False; CONST.SAVE_ERROR_VIDEOS = False
+
                 pokemon_image = None
                 pokemon = {'name': pokemon_name, 'shiny': False}
                 add_or_update_encounter(pokemon, int(time() - encounter_playtime))
@@ -176,12 +182,14 @@ def GUI_control(Encounter_Type, FPS, Controller, Image_Queue, shutdown_event, st
                     pokemon = {'name': pokemon_name, 'shiny': True}
                     add_or_update_encounter(pokemon, int(time() - encounter_playtime))
                     Video_Capture.save_video(f'Shiny {pokemon_name} - {time()}')
-                    Thread(target=lambda: play_sound(f'./{CONST.SHINY_SOUND_PATH}'), daemon=True).start()
-                    Thread(target=lambda: 
-                        Email.send_shiny_found(pokemon_name, last_saved_image_path), daemon=False
+                    Thread(target=lambda: play_sound(f'./{CONST.SHINY_SOUND_PATH}'), daemon=False).start()
+                    Thread(
+                        target=lambda n=pokemon_name, p=last_saved_image_path: Email.send_shiny_found(n, p),
+                        daemon=False
                     ).start()
-                    Thread(target=lambda: 
-                        Telegram.send_shiny_found(pokemon_name, last_saved_image_path), daemon=False
+                    Thread(
+                        target=lambda n=pokemon_name, p=last_saved_image_path: Telegram.send_shiny_found(n, p),
+                        daemon=False
                     ).start()
                     print(COLOR_str.SHINY_FOUND
                         .replace('{module}', 'Shiny Hunter')
@@ -199,7 +207,7 @@ def GUI_control(Encounter_Type, FPS, Controller, Image_Queue, shutdown_event, st
                     try: Video_Capture.save_video()
                     except: pass
                     shutdown_event.set()
-                Timer(3, lambda: _stop_execution(Video_Capture, shutdown_event)).start()
+                Timer(3, lambda v=Video_Capture, method=_stop_execution: method(v, shutdown_event)).start()
                 Controller.current_event = "STOP_3"
 
             update_items = {

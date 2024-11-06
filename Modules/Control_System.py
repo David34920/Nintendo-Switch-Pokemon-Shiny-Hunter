@@ -146,12 +146,6 @@ def sword_shield_giants(image, state):
         if image.check_pixel_color(CONST.HOME_MENU_COLOR):
             return 'SWSH_ENTER_GIANTS_COMBAT_1'
 
-    # Game loading, full black screen
-    elif state == 'RESTART_GAME_4':
-        # Check if the black screen has ended
-        if not is_black_screen_visible(image):
-            return 'SWSH_ENTER_GIANTS_COMBAT_1'
-
     # Combat loaded (Wild Pokémon stars)
     elif state == 'SWSH_ENTER_GIANTS_COMBAT_1':
         # Look for the text box
@@ -176,10 +170,12 @@ def sword_shield_giants(image, state):
 
     # Manage restarts and stops states
     else:
-        state = _check_common_states(image, state)
+        new_state = _check_common_states(image, state)
         # Skip restart steps, only macro of 'RESTART_GAME_1' is needed
-        if state == 'RESTART_GAME_2':
-            state = 'SWSH_ENTER_GIANTS_COMBAT_1'
+        if new_state == 'RESTART_GAME_2':
+            return 'SWSH_ENTER_GIANTS_COMBAT_1'
+        else:
+            return new_state
 
     return state
 

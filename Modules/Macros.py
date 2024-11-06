@@ -40,6 +40,7 @@ def start_macro(controller):
     controller.nxbt_manager.press_buttons(controller.controller_index, [Buttons.B])
     sleep(1); controller.current_button_pressed = 'HOME'
     controller.nxbt_manager.press_buttons(controller.controller_index, [Buttons.HOME])
+    controller.current_button_pressed = ''
 
 ###########################################################################################################################
 
@@ -47,11 +48,7 @@ def start_macro(controller):
 def fast_start_macro(controller):
     if controller.previous_event == controller.current_event: return
     
-    controller.current_button_pressed = 'B'; sleep(1)
-    controller.nxbt_manager.press_buttons(controller.controller_index, [Buttons.B])
-    sleep(1); controller.current_button_pressed = 'HOME'
-    controller.nxbt_manager.press_buttons(controller.controller_index, [Buttons.HOME])
-    controller.current_button_pressed = ''
+    start_macro(controller)
     sleep(2); controller.current_button_pressed = 'A'
     controller.nxbt_manager.press_buttons(controller.controller_index, [Buttons.A])
     sleep(1)
@@ -211,6 +208,7 @@ def enter_static_combat_macro(controller):
 def press_single_button(controller, button):
     controller.current_button_pressed = button
     controller.nxbt_manager.press_buttons(controller.controller_index, [getattr(Buttons, button)])
+    controller.current_button_pressed = ''
 
 ###########################################################################################################################
 
