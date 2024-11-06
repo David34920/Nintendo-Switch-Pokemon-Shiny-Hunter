@@ -21,9 +21,9 @@ if __name__ == '__main__':
         program_name = __file__.split('/')[-1]
         exit(os.system(f'sudo python3 {program_name}'))
 
-import copy
+import logging
 from queue import Queue
-from time import sleep, time
+from time import time
 from threading import Thread, Event, Timer
 
 from Modules.Macros import *
@@ -114,10 +114,16 @@ def GUI_control(Encounter_Type, FPS, Controller, Image_Queue, shutdown_event, st
             elif Encounter_Type == 'STARTER': Controller.current_event = starter_encounter(image, Controller.current_event)
             elif Encounter_Type == 'SWSH_GIANTS': Controller.current_event = sword_shield_giants(image, Controller.current_event)
 
+            if Controller.current_event != Controller.previous_event:
+                logging.debug(f'New event: {Controller.current_event}')
+
             # If no pokemon is found for too long, stop
             if Controller.current_event != 'SHINY_FOUND' and time() - encounter_playtime > CONST.FAILURE_DETECTION_TIME:
                 Thread(target=lambda: Telegram.send_error_detected(), daemon=False).start()
                 Thread(target=lambda: Email.send_error_detected(), daemon=False).start()
+
+                logging.error(f'No pokemon found for too long. Event: {Controller.current_event}')
+
                 print(COLOR_str.STUCK_FOR_TOO_LONG
                     .replace('{module}', 'Shiny Hunter')
                     .replace('{event}', Controller.current_event)
@@ -169,6 +175,8 @@ def GUI_control(Encounter_Type, FPS, Controller, Image_Queue, shutdown_event, st
                 pokemon = {'name': pokemon_name, 'shiny': False}
                 add_or_update_encounter(pokemon, int(time() - encounter_playtime))
                 global_encounters += 1
+
+                logging.debug("Reset playtime")
                 encounter_playtime = time()
 
             # Wait some seconds to save the video of the shiny encounter
@@ -276,6 +284,12 @@ def check_threads(threads, shutdown_event):
 ###########################################################################################################################
 
 if __name__ == "__main__":
+
+    logging.basicConfig(
+        level=CONST.LOG_LEVEL,
+        format='%(asctime)s - %(levelname)s - %(message)s'
+    )
+
     def main_menu():
         print('\n' + COLOR_str.MENU.replace('{module}', 'Shiny Hunter'))
         print(COLOR_str.MENU_OPTION.replace('{index}', '1').replace('{option}', 'Start wild shiny hunter'))
