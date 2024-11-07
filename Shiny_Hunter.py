@@ -3,7 +3,9 @@
 ###########################################################################################################################
 
 import os
-import sys; sys.path.append('Modules')
+import sys; 
+folders = ['Modules', 'Modules/Mail', 'Modules/Telegram']
+for folder in folders: sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), folder)))
 import Colored_Strings as COLOR_str
 
 # NXBT is only compatible with Linux systems
@@ -28,8 +30,9 @@ from Macros import *
 from Database import *
 import Constants as CONST
 from Control_System import *
-import Colored_Strings as COLOR_str
+from Mail import Email_Sender
 from FPS_Counter import FPS_Counter
+from Telegram import Telegram_Sender
 from GUI import GUI, App, play_sound
 from Game_Capture import Game_Capture
 from Image_Processing import Image_Processing
@@ -71,6 +74,10 @@ def GUI_control(Encounter_Type, FPS, Controller, Image_Queue, shutdown_event, st
     global_encounters = database_data['global_encounters']
     last_shiny_encounter = database_data['last_shiny_encounter']
 
+    last_saved_image_path = str()
+    Email = Email_Sender()
+    Telegram = Telegram_Sender()
+
     while not shutdown_event.is_set():
         image = Image_Processing(Video_Capture.read_frame())
         if isinstance(image.original_image, type(None)): 
@@ -108,6 +115,16 @@ def GUI_control(Encounter_Type, FPS, Controller, Image_Queue, shutdown_event, st
             elif Encounter_Type == 'STATIC': Controller.current_event = static_encounter(image, Controller.current_event)
             elif Encounter_Type == 'STARTER': Controller.current_event = starter_encounter(image, Controller.current_event)
 
+            # If no pokemon is found for too long, stop
+            if Controller.current_event != 'SHINY_FOUND' and time() - encounter_playtime > CONST.FAILURE_DETECTION_TIME:
+                Thread(target=lambda: Telegram.send_error_detected(), daemon=False).start()
+                Thread(target=lambda: Email.send_error_detected(), daemon=False).start()
+                print(COLOR_str.STUCK_FOR_TOO_LONG
+                    .replace('{module}', 'Shiny Hunter')
+                    .replace('{event}', Controller.current_event)
+                )
+                shutdown_event.set()
+
             # Check if the program got stuck in some event
             if (Controller.current_event not in 
                 ["MOVE_PLAYER", "WAIT_PAIRING_SCREEN", "WAIT_HOME_SCREEN", "SHINY_FOUND", "ENTER_LAKE_4"] and \
@@ -133,6 +150,7 @@ def GUI_control(Encounter_Type, FPS, Controller, Image_Queue, shutdown_event, st
                 pokemon_name = pokemon_image.recognize_pokemon()
                 if CONST.SAVE_IMAGES: 
                     pokemon_image.save_image(pokemon_name)
+                    last_saved_image_path = pokemon_image.saved_image_path
                     # Check if the computer is running out of space
                     system_space = FPS.get_system_available_space()
                     if system_space['available_no_format'] < CONST.CRITICAL_AVAILABLE_SPACE:
@@ -151,14 +169,21 @@ def GUI_control(Encounter_Type, FPS, Controller, Image_Queue, shutdown_event, st
             # Wait some seconds to save the video of the shiny encounter
             elif Controller.current_event == "SHINY_FOUND":
                 # It sometimes gets bugged and detects the Starly instead of the starter, which will raise always 
-                # a false positive due to the amount of time between the taxt boxes
-                if Encounter_Type == 'STARTER' and pokemon_name in ['Starly', 'Étourmi', 'Staralili']: 
-                    Controller.current_event = "RESTART_GAME_1"
+                # a false positive due to the amount of time between the text boxes
+                if (Encounter_Type == 'STARTER' and pokemon_name in ['Starly', 'Étourmi', 'Staralili']) or \
+                    (pokemon_name == ''): 
+                        Controller.current_event = "RESTART_GAME_1"
                 elif time() - shiny_timer > CONST.SHINY_RECORDING_SECONDS:
                     pokemon = {'name': pokemon_name, 'shiny': True}
                     add_or_update_encounter(pokemon, int(time() - encounter_playtime))
                     Video_Capture.save_video(f'Shiny {pokemon_name} - {time()}')
                     Thread(target=lambda: play_sound(f'./{CONST.SHINY_SOUND_PATH}'), daemon=True).start()
+                    Thread(target=lambda: 
+                        Email.send_shiny_found(pokemon_name, last_saved_image_path), daemon=False
+                    ).start()
+                    Thread(target=lambda: 
+                        Telegram.send_shiny_found(pokemon_name, last_saved_image_path), daemon=False
+                    ).start()
                     print(COLOR_str.SHINY_FOUND
                         .replace('{module}', 'Shiny Hunter')
                         .replace('{pokemon}', pokemon_name)

@@ -1,12 +1,18 @@
 __pycache__
+.venv/
+.vscode/
+.pytest_cache
 
 /Media/Tests/
 /Media/Images/
 /Media/Videos/
 *.db
 
+# Prevent email credentials from being accidentally pushed to GitHub
+Credentials.env
+
 Test.py
 Changelog.txt
 
-# OS generated files #
+# Hidden MacOS system file which is automatically created by MacOS systems
 **/.DS_Store

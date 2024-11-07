@@ -12,16 +12,20 @@ OUTPUT_VIDEO_PATH = 'Media/Videos/Video.avi'
 # Can't be greater than 110s!
 SHINY_RECORDING_SECONDS = 60
 SKIPPED_FRAMES_TO_RECONNECT = 3
+# Used to debug issues and to save the video of the encounter. Disable this if you have performance issues
+ENABLE_VIDEO_RECORDING = True
 
 ###########################################################################################################################
 #################################################     IMAGE PROCESSING     ################################################
 ###########################################################################################################################
 
-# Sopported languages: ES, EN, DE, FR and IT
+# Supported languages: ES, EN, DE, FR and IT
 # Not supported languages: KO, ZH-CN and ZH-TW (Program will work, but database will do weird things)
 LANGUAGE = 'EN'
-# [PIXELS] Nintendo Switch captured frames' size 
+# [PIXELS] Nintendo Switch captured frames' possible sizes 1080p: (1920, 1080) | 720p: (1280, 720)
+# If you want to capture image and video in full HD, use 1080p, if you want better performance, use 720p.
 ORIGINAL_FRAME_SIZE = (1920, 1080)
+
 TEXT_PARAMS = {
     'font_scale': 0.5,
     # [BGR]
@@ -87,15 +91,15 @@ IMAGES_COUNT_WARNING = 300
 # Time the player is moving in each direction
 WILD_WALKING_SECONDS = 1
 # 'NS': Up/Down | 'EW': Right/Left
-WILD_WALKING_DIRECTION = 'EW'
+WILD_WALKING_DIRECTION = 'NS'
 MOVE_FORWARD_STATIC_ENCOUNTER = False
 SKIP_UPDATING_GAME = False
 # Some static encounters make a white screen flash before entering the combat
-# Raise this value to 4 for Dialga and Palkia; default value is 2
+# Raise this value to 4 for Dialga and Palkia, 6.5 for Arceus; default value is 2
 STATIC_ENCOUNTERS_DELAY = 2
 # How long has the bot been stuck in the same state before restarting the game
 STUCK_TIMER_SECONDS = 30
-SHINY_DETECTION_TIME = 2
+SHINY_DETECTION_TIME = 2.5
 HOME_MENU_COLOR = (237, 237, 237)
 PAIRING_MENU_COLOR = (135, 135, 125)
 LOAD_SCREEN_BLACK_COLOR = (5, 5, 5)
@@ -131,9 +135,40 @@ STARTER = 'R'
 DATABASE_PATH = 'Media/Database.db'
 
 ###########################################################################################################################
+#####################################################     MESSAGES     ####################################################
+###########################################################################################################################
+
+# You will receive mail notifications when a shiny is found or an error occurs
+MAIL_NOTIFICATIONS = False
+# If you have configured the email notifications, fill in the following fields
+MAIL_SETTINGS = {
+    'port': 587,                        # Port TLS: 587 | SSL: 465
+    'smtp_server': 'smtp.gmail.com',    # SMTP server
+
+    'credentials_file_path': 'Modules/Mail/Email_Credentials.env',
+    'save_credentials_file_path': 'Modules/Mail/Credentials.env',
+    'credentials_template_file_path': 'Media/Messages/Email_Credentials_Template.env'
+}
+
+MESSAGES_PLACEHOLDER_IMAGE = 'Media/Messages/Dinones.png'
+MESSAGES_ERROR_IMAGE = 'Media/Messages/Dizzy Dinones.png'
+SHINY_HTML_PATH = 'Modules/Mail/Shiny.html'
+ERROR_HTML_PATH = 'Modules/Mail/Error.html'
+# [SECONDS] Send a notification if no pokemon has been found in this time
+FAILURE_DETECTION_TIME = 5*60
+
+TELEGRAM_NOTIFICATIONS = False
+TELEGRAM_SETTINGS = {
+    'credentials_file_path': 'Modules/Telegram/Telegram_Credentials.env',
+    'save_credentials_file_path': 'Modules/Telegram/Credentials.env',
+    'credentials_template_file_path': 'Media/Messages/Telegram_Credentials_Template.env'
+}
+
+###########################################################################################################################
 ######################################################     TESTS     ######################################################
 ###########################################################################################################################
 
+# Will color the pixels that are being used to detect the state
 TESTING = True
 SAVE_ERROR_VIDEOS = False
 TESTING_COLOR = (255, 0, 255)

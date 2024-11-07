@@ -133,6 +133,11 @@ SHINY_FOUND = \
     f'\033[{COLORS["Blue"]}m{"{encounters}"}\033[0;m'+\
     f'\033[{COLORS["Blue"]};{SPECIAL["Bold"]}m encounters!\033[0;m'
 
+STUCK_FOR_TOO_LONG = \
+    f'{ERROR}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[{module}] "}\033[0;m'+\
+    f'\033[{COLORS["Red"]};{SPECIAL["Bold"]}mGot stuck in the same state for too long: \033[0;m'+\
+    f'\033[{COLORS["Red"]};{SPECIAL["Italics"]}m{"{event}"}\033[0;m'
+
 ###########################################################################################################################
 ######################################################     MENU     #######################################################
 ###########################################################################################################################
@@ -343,6 +348,48 @@ COULD_NOT_LOAD_IMAGE = \
     f'{WARN}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[GUI] "}\033[0;m'+\
     f'\033[{COLORS["Yellow"]};{SPECIAL["Bold"]}mCould not load image: \033[0;m'+\
     f'\033[{COLORS["Yellow"]};{SPECIAL["Italics"]}m{"{path}"}\033[0;m'
+
+###########################################################################################################################
+#####################################################     MESSAGES     ####################################################
+###########################################################################################################################
+
+HTML_NOT_FOUND = \
+    f'{WARN}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Mail] "}\033[0;m'+\
+    f'\033[{COLORS["Yellow"]};{SPECIAL["Bold"]}mCould not find HTML: \033[0;m'+\
+    f'\033[{COLORS["Yellow"]};{SPECIAL["Italics"]}m{"{html}"}\033[0;m'
+
+EMAIL_SENT = \
+    f'{CORRECT}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Mail] "}\033[0;m'+\
+    f'\033[{COLORS["Green"]};{SPECIAL["Bold"]}mSuccessfully sent email to \033[0;m'+\
+    f'\033[{COLORS["Green"]}m{"{email}"}\033[0;m'+\
+    f'\033[{COLORS["Green"]};{SPECIAL["Bold"]}m!\033[0;m'
+
+COULD_NOT_SEND_EMAIL = \
+    f'{WARN}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Mail] "}\033[0;m'+\
+    f'\033[{COLORS["Yellow"]};{SPECIAL["Bold"]}mCould not send email to \033[0;m'+\
+    f'\033[{COLORS["Yellow"]}m{"{email}"}\033[0;m'+\
+    f'\033[{COLORS["Yellow"]};{SPECIAL["Bold"]}m: \033[0;m'+\
+    f'\033[{COLORS["Yellow"]}m{"{error}"}\033[0;m'
+
+EMPTY_CREDENTIALS = \
+    f'{WARN}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[{module}] "}\033[0;m'+\
+    f'\033[{COLORS["Yellow"]};{SPECIAL["Bold"]}m{"{module}"} notifications cannot be sent: \033[0;m'+\
+    f'\033[{COLORS["Yellow"]}mSome fields are missing in the \033[0;m'+\
+    f'\033[{COLORS["Yellow"]};{SPECIAL["Italics"]}m{"{path}"}\033[0;m'+\
+    f'\033[{COLORS["Yellow"]}m file\033[0;m'
+
+TELEGRAM_SENT = \
+    f'{CORRECT}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Telegram] "}\033[0;m'+\
+    f'\033[{COLORS["Green"]};{SPECIAL["Bold"]}mSuccessfully sent telegram to chat \033[0;m'+\
+    f'\033[{COLORS["Green"]}m{"{chat_id}"}\033[0;m'+\
+    f'\033[{COLORS["Green"]};{SPECIAL["Bold"]}m!\033[0;m'
+
+COULD_NOT_SEND_TELEGRAM = \
+    f'{WARN}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Telegram] "}\033[0;m'+\
+    f'\033[{COLORS["Yellow"]};{SPECIAL["Bold"]}mCould not send telegram to chat \033[0;m'+\
+    f'\033[{COLORS["Yellow"]}m{"{chat_id}"}\033[0;m'+\
+    f'\033[{COLORS["Yellow"]};{SPECIAL["Bold"]}m: \033[0;m'+\
+    f'\033[{COLORS["Yellow"]}m{"{error}"}\033[0;m'
 
 ###########################################################################################################################
 #####################################################     PROGRAM     #####################################################
